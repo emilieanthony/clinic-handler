@@ -1,4 +1,4 @@
-image: node:14-alpine #import the image of node.js
+image: node:14-alpine #import the image of node.js from docker
 
 stages:          # List of stages for jobs, and their order of execution
   - build
@@ -6,7 +6,7 @@ stages:          # List of stages for jobs, and their order of execution
 build-job:       # This job runs in the build stage, which runs first.
   stage: build
   tags:
-    - docker
+    - docker #defines docker as the runner for this job
   script:
     - echo  "Start building"
     - npm install #build the node code based on the package.json file
