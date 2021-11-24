@@ -1,4 +1,4 @@
-image: node:latest #import the image of node.js
+image: node:14-alpine #import the image of node.js
 
 stages:          # List of stages for jobs, and their order of execution
   - build
