@@ -1,0 +1,24 @@
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+
+const DentistsSchema = new Schema({
+  id: Number,
+  name: String,
+  owner: String,
+  dentists: Number,
+  adress: String,
+  city: String,
+  coordinate: {
+    longitude: String,
+    latitude: String,
+  },
+  openinghours: {
+    monday: String,
+    tuesday: String,
+    wednesday: String,
+    thursday: String,
+    friday: String,
+  },
+});
+
+module.exports = mongoose.model("dentists", DentistsSchema);
