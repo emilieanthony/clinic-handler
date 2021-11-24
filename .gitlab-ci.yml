@@ -1,0 +1,13 @@
+image: node:latest #import the image of node.js
+
+stages:          # List of stages for jobs, and their order of execution
+  - build
+
+build-job:       # This job runs in the build stage, which runs first.
+  stage: build
+  tags:
+    - docker
+  script:
+    - echo  "Start building"
+    - npm install #build the node code based on the package.json file
+    - echo "Build complete."
