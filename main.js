@@ -1,9 +1,4 @@
-const express = require("express");
-const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const app = express();
-
-const { public, private } = require("./routes");
 
 // Variables
 const mongoURI = "mongodb://localhost:27017/dentistimoDB";
@@ -23,23 +18,15 @@ mongoose.connect(
   }
 );
 
-app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
-app.use(bodyParser.json({ limit: "50mb", extended: true }));
-app.use(public);
-app.use(private);
-
-app.listen(port, () => {
-  console.log("Server start");
-});
-
 const mqtt = require("mqtt");
 const connectUrl = `mqtt://localhost:1883`;
-const topic = "/nodejs/mqtt";
+const newClinicTopic = "new_clinic";
+const storedClinicTopic = "stored_new_clinic"
 const UserData = require("./models/user");
-const MapsData = require("./models/map");
+//const MapsData = require("./models/map");
 const DentistsData = require("./models/dentist");
-const RequestData = require("./models/request");
-const ResponsesData = require("./models/response");
+//const RequestData = require("./models/request");
+//const ResponsesData = require("./models/response");
 
 const client = mqtt.connect(connectUrl, {
   // clientId,
@@ -50,18 +37,27 @@ const client = mqtt.connect(connectUrl, {
   reconnectPeriod: 1000,
 });
 
+// subscribe to new topics
 client.on("connect", () => {
   console.log("Connected");
-  client.subscribe([topic], () => {
-    console.log(`Subscribe to topic '${topic}'`);
+  client.subscribe([newClinicTopic], () => {
+    console.log(`Subscribe to topic '${newClinicTopic}'`);
   });
 });
 
-
+// handle messages on the topics that are subscribed to
 client.on("message", (topic, payload) => {
   console.log("Received Message:", topic, payload.toString());
   const data = JSON.parse(payload);
   if (payload) console.log(data);
+  if (topic === newClinicTopic){
+    const dentist = new DentistsData(data);
+    dentist.save(function (err, newDentist) {
+      if (err) return console.error(err);
+      console.log(dentist.name + " saved to database.");
+      client.publish(storedClinicTopic, JSON.stringify(newDentist))
+    });
+  }
 
   if (data.type === "users") {
     UserData.find((err, result) => {
@@ -83,8 +79,15 @@ client.on("message", (topic, payload) => {
 //http 
 const updateDB = async () => {
   const { dentists } = require("./assets/dentists.json");
+  // delete all every time server starts
   await DentistsData.deleteMany({});
+  // insert from JSON file
   await DentistsData.insertMany(dentists);
+// go over each dentist to publish for the dentists in the system
+  dentists.forEach(dentist=>{
+    client.publish(storedClinicTopic, JSON.stringify(dentist))
+    console.log("Published dentists:" + dentist.name)
+  })
   // await DentistsData.updateMany(dentists);
   // for (const d of dentists) {
   //   const dentist = await DentistsData.findOne({ id: d.id }).exec();
