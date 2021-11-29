@@ -1,9 +1,21 @@
 const request = require("request");
 const mongoose = require("mongoose");
+const mqtt = require("mqtt");
+const UserData = require("./models/user");
+const DentistsData = require("./models/dentist");
+const dentist = require("./models/dentist");
+//const MapsData = require("./models/map");
+//const RequestData = require("./models/request");
+//const ResponsesData = require("./models/response");
 
 // Variables
 const mongoURI = "mongodb://localhost:27017/dentistimoDB";
 const port = process.env.PORT || 3000;
+const connectUrl = `mqtt://localhost:1883`;
+
+// Topics
+const newClinicTopic = "new_clinic";
+const storedClinicTopic = "stored_new_clinic";
 
 // Connect to MongoDB
 mongoose.connect(
@@ -19,17 +31,7 @@ mongoose.connect(
   }
 );
 
-const mqtt = require("mqtt");
-const connectUrl = `mqtt://localhost:1883`;
-const newClinicTopic = "new_clinic";
-const storedClinicTopic = "stored_new_clinic";
-const UserData = require("./models/user");
-//const MapsData = require("./models/map");
-const DentistsData = require("./models/dentist");
-const dentist = require("./models/dentist");
-//const RequestData = require("./models/request");
-//const ResponsesData = require("./models/response");
-
+// Connect MQTT
 const client = mqtt.connect(connectUrl, {
   // clientId,
   clean: true,
@@ -39,7 +41,7 @@ const client = mqtt.connect(connectUrl, {
   reconnectPeriod: 1000,
 });
 
-// subscribe to new topics
+// Subscribe to new topics
 client.on("connect", () => {
   console.log("Connected");
   client.subscribe([newClinicTopic], () => {
@@ -47,7 +49,7 @@ client.on("connect", () => {
   });
 });
 
-// handle messages on the topics that are subscribed to
+// Handle messages on the topics that are subscribed to
 client.on("message", (topic, payload) => {
   console.log("Received Message:", topic, payload.toString());
   const data = JSON.parse(payload);
@@ -79,6 +81,7 @@ client.on("message", (topic, payload) => {
   }
 });
 
+// Get dentist data and publish
 function updateDB() {
   request(
     "https://raw.githubusercontent.com/feldob/dit355_2020/master/dentists.json",
@@ -103,7 +106,7 @@ function updateDB() {
   );
 }
 
-// updates database from json one time per minute
+// Updates database from json one time per minute
 setInterval(() => updateDB(), 1000 * 60);
 updateDB();
 
