@@ -1,3 +1,4 @@
+const request = require("request");
 const mongoose = require("mongoose");
 
 // Variables
@@ -21,10 +22,11 @@ mongoose.connect(
 const mqtt = require("mqtt");
 const connectUrl = `mqtt://localhost:1883`;
 const newClinicTopic = "new_clinic";
-const storedClinicTopic = "stored_new_clinic"
+const storedClinicTopic = "stored_new_clinic";
 const UserData = require("./models/user");
 //const MapsData = require("./models/map");
 const DentistsData = require("./models/dentist");
+const dentist = require("./models/dentist");
 //const RequestData = require("./models/request");
 //const ResponsesData = require("./models/response");
 
@@ -50,12 +52,12 @@ client.on("message", (topic, payload) => {
   console.log("Received Message:", topic, payload.toString());
   const data = JSON.parse(payload);
   if (payload) console.log(data);
-  if (topic === newClinicTopic){
+  if (topic === newClinicTopic) {
     const dentist = new DentistsData(data);
     dentist.save(function (err, newDentist) {
       if (err) return console.error(err);
       console.log(dentist.name + " saved to database.");
-      client.publish(storedClinicTopic, JSON.stringify(newDentist))
+      client.publish(storedClinicTopic, JSON.stringify(newDentist));
     });
   }
 
@@ -76,18 +78,49 @@ client.on("message", (topic, payload) => {
     });
   }
 });
-//http 
+
+function updateDB() {
+  request(
+    "https://raw.githubusercontent.com/feldob/dit355_2020/master/dentists.json",
+    { json: true },
+    async (err, res, body) => {
+      if (err) {
+        return console.log(err);
+      }
+      await DentistsData.deleteMany({});
+      //store in database
+      DentistsData.create(body.dentists, function (err, dentists) {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        dentists.forEach((dentist) => {
+          client.publish(storedClinicTopic, JSON.stringify(dentist));
+          console.log("Published dentists:" + dentist.name);
+        });
+      });
+    }
+  );
+}
+
+// updates database from json one time per minute
+setInterval(() => updateDB(), 1000 * 60);
+updateDB();
+
+/* 
+fetchData();
+//http
 const updateDB = async () => {
   const { dentists } = require("./assets/dentists.json");
   // delete all every time server starts
   await DentistsData.deleteMany({});
   // insert from JSON file
   await DentistsData.insertMany(dentists);
-// go over each dentist to publish for the dentists in the system
-  dentists.forEach(dentist=>{
-    client.publish(storedClinicTopic, JSON.stringify(dentist))
-    console.log("Published dentists:" + dentist.name)
-  })
+  // go over each dentist to publish for the dentists in the system
+  dentists.forEach((dentist) => {
+    client.publish(storedClinicTopic, JSON.stringify(dentist));
+    console.log("Published dentists:" + dentist.name);
+  });
   // await DentistsData.updateMany(dentists);
   // for (const d of dentists) {
   //   const dentist = await DentistsData.findOne({ id: d.id }).exec();
@@ -97,11 +130,7 @@ const updateDB = async () => {
   //     await DentistsData.updateOne(d);
   //   }
   // }
-};
-// updates database from json one time per minute
-setInterval(() => updateDB(), 1000 * 60);
-
-updateDB();
+}; */
 
 // mqtt request for front
 // const { client } = useMqttState();
