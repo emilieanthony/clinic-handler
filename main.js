@@ -69,23 +69,6 @@ client.on("message", async (topic, payload) => {
       console.log("Published dentists:" + dentist.name);
     });
   }
-
-  /* if (data.type === "users") {
-    UserData.find((err, result) => {
-      console.log(err);
-      client.publish(topic, JSON.stringify(result), {
-        qos: 0,
-        retain: false,
-      });
-    });
-  } */
-
-  /*  if (data.type === "maps") {
-    DentistsData.find((err, result) => {
-      console.log(err);
-      client.publish(topic, JSON.stringify(result), { qos: 0, retain: false });
-    });
-  } */
 });
 
 // Get dentist data and publish
@@ -113,38 +96,7 @@ function updateDB() {
   );
 }
 
-// Updates database from json
+// Updates database
 setInterval(() => updateDB(), 1000 * 60 * 60 * 24);
 updateDB();
 
-/* 
-fetchData();
-//http
-const updateDB = async () => {
-  const { dentists } = require("./assets/dentists.json");
-  // delete all every time server starts
-  await DentistsData.deleteMany({});
-  // insert from JSON file
-  await DentistsData.insertMany(dentists);
-  // go over each dentist to publish for the dentists in the system
-  dentists.forEach((dentist) => {
-    client.publish(storedClinicTopic, JSON.stringify(dentist));
-    console.log("Published dentists:" + dentist.name);
-  });
-  // await DentistsData.updateMany(dentists);
-  // for (const d of dentists) {
-  //   const dentist = await DentistsData.findOne({ id: d.id }).exec();
-  //   if (!dentist) {
-  //     await DentistsData.create(d);
-  //   } else {
-  //     await DentistsData.updateOne(d);
-  //   }
-  // }
-}; */
-
-// mqtt request for front
-// const { client } = useMqttState();
-
-// function handleClick(message) {
-//   return client.publish('esp32/led', message);
-// }
