@@ -16,6 +16,7 @@ const connectUrl = `mqtt://localhost:1883`;
 // Topics
 const newClinicTopic = "new_clinic";
 const storedClinicTopic = "stored_new_clinic";
+const getAllClinics = "get_all_clinics";
 
 // Connect to MongoDB
 mongoose.connect(
@@ -44,26 +45,32 @@ const client = mqtt.connect(connectUrl, {
 // Subscribe to new topics
 client.on("connect", () => {
   console.log("Connected");
-  client.subscribe([newClinicTopic], () => {
+  client.subscribe([newClinicTopic, getAllClinics], () => {
     console.log(`Subscribe to topic '${newClinicTopic}'`);
   });
 });
 
 // Handle messages on the topics that are subscribed to
-client.on("message", (topic, payload) => {
+client.on("message", async (topic, payload) => {
   console.log("Received Message:", topic, payload.toString());
-  const data = JSON.parse(payload);
-  if (payload) console.log(data);
+  //if (payload) console.log(data);
   if (topic === newClinicTopic) {
+    const data = JSON.parse(payload);
     const dentist = new DentistsData(data);
     dentist.save(function (err, newDentist) {
       if (err) return console.error(err);
       console.log(dentist.name + " saved to database.");
       client.publish(storedClinicTopic, JSON.stringify(newDentist));
     });
+  } else if (topic === getAllClinics) {
+    const dentists = await dentist.find();
+    dentists.forEach((dentist) => {
+      client.publish(storedClinicTopic, JSON.stringify(dentist));
+      console.log("Published dentists:" + dentist.name);
+    });
   }
 
-  if (data.type === "users") {
+  /* if (data.type === "users") {
     UserData.find((err, result) => {
       console.log(err);
       client.publish(topic, JSON.stringify(result), {
@@ -71,14 +78,14 @@ client.on("message", (topic, payload) => {
         retain: false,
       });
     });
-  }
+  } */
 
-  if (data.type === "maps") {
+  /*  if (data.type === "maps") {
     DentistsData.find((err, result) => {
       console.log(err);
       client.publish(topic, JSON.stringify(result), { qos: 0, retain: false });
     });
-  }
+  } */
 });
 
 // Get dentist data and publish
