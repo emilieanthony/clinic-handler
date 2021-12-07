@@ -6,7 +6,7 @@ const DentistsSchema = new Schema({
   name: String,
   owner: String,
   dentists: Number,
-  adress: String,
+  address: String,
   city: String,
   coordinate: {
     longitude: String,
