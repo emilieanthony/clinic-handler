@@ -106,8 +106,8 @@ function updateDB() {
   );
 }
 
-// Updates database from json one time per minute
-setInterval(() => updateDB(), 1000 * 60);
+// Updates database from json
+setInterval(() => updateDB(), 1000 * 60 * 60 * 24);
 updateDB();
 
 /* 
