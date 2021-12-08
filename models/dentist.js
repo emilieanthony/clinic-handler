@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const DentistsSchema = new Schema({
-  id: Number,
+  id: { type: Number, required: [true, "Clinic ID is required"] },
   name: String,
   owner: String,
   dentists: Number,
