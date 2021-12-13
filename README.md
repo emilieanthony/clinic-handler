@@ -3,7 +3,7 @@
 ## Description
 
 This component is part of the the distributed system DENTISTIMO, a web application that offers a geolocalisation based dental care booking system.
-The clinic handler provides other component with dentistry data and updates the database. More details can be found in the component diagram below as well as further in this README.md file. 
+The clinic handler provides other components with dentistry data and updates the database. More details can be found in the component diagram below as well as further in this README.md file. 
 
 ## System Architecture - Component Diagram
 
