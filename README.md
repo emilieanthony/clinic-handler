@@ -27,7 +27,7 @@ The JSON objects should have at least these information for the following tasks:
 <b>Example</b>
 
 ```
-       {
+{
   "dentists": [
     {
       "id": 1,
