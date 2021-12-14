@@ -13,10 +13,15 @@ const mongoURI = "mongodb://localhost:27017/dentistimoDB";
 const port = process.env.PORT || 3000;
 const connectUrl = `mqtt://localhost:1883`;
 
-// Topics
+// Subscribed Topics
 const newClinicTopic = "new_clinic";
 const storedClinicTopic = "stored_new_clinic";
 const getAllClinics = "get_all_clinics";
+const getAClinic = "get_a_clinic";
+
+// Published topics
+const publishOneClinicFailed = 'send_a_clinic/failed'
+const publishOneClinicSucceeded = 'send_a_clinic/succeeded'
 
 // Connect to MongoDB
 mongoose.connect(
@@ -45,7 +50,7 @@ const client = mqtt.connect(connectUrl, {
 // Subscribe to new topics
 client.on("connect", () => {
   console.log("Connected");
-  client.subscribe([newClinicTopic, getAllClinics], () => {
+  client.subscribe([newClinicTopic, getAllClinics, getAClinic], () => {
     console.log(`Subscribe to topic '${newClinicTopic}'`);
   });
 });
@@ -68,6 +73,8 @@ client.on("message", async (topic, payload) => {
       client.publish(storedClinicTopic, JSON.stringify(dentist));
       console.log("Published dentists:" + dentist.name);
     });
+  } else if (topic === getAClinic){
+    getClinic(payload);
   }
 });
 
@@ -100,3 +107,31 @@ function updateDB() {
 setInterval(() => updateDB(), 1000 * 60 * 60 * 24);
 updateDB();
 
+/**
+ * Method that parses the message into a json object and forwards it to query the database.
+ * @param payload (message as a string). Needs to contain the database _id and be parsable into a JSON object.
+ */
+function getClinic(payload){
+  console.log('getClinic')
+  let requestedClinic = JSON.parse(payload);
+  getClinicFromDatabase(requestedClinic)
+}
+
+/**
+ * Query the database to retrieve a given clinic. Publishes the result of the query to the appropriate topics via mqtt.
+ * @param requestedClinic json object clinic: Needs to contain the database _id and be parsable into a JSON object.
+ */
+function getClinicFromDatabase(requestedClinic) {
+  console.log('getClinicFromDatabase')
+
+  let clinicID = requestedClinic._id
+  dentist.findById(clinicID, function(err, clinic){
+    if (err){
+      console.log(err.message)
+      client.publish(publishOneClinicFailed, JSON.stringify({'error' : err.message}), {qos:1})
+    }else{
+      console.log(JSON.stringify(clinic))
+      client.publish(publishOneClinicSucceeded, JSON.stringify(JSON.stringify(clinic)), {qos:1})
+    }
+  })
+}
