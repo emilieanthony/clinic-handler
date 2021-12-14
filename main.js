@@ -111,7 +111,6 @@ updateDB();
  * @param payload (message as a string). Needs to contain the database _id and be parsable into a JSON object.
  */
 function getClinic(payload){
-  console.log('getClinic')
   let requestedClinic = JSON.parse(payload);
   getClinicFromDatabase(requestedClinic)
 }
@@ -121,16 +120,16 @@ function getClinic(payload){
  * @param requestedClinic json object clinic: Needs to contain the database _id and be parsable into a JSON object.
  */
 function getClinicFromDatabase(requestedClinic) {
-  console.log('getClinicFromDatabase')
-
   let clinicID = requestedClinic._id
   dentist.findById(clinicID, function(err, clinic){
     if (err){
-      console.log(err.message)
       client.publish(publishOneClinicFailed, JSON.stringify({'error' : err.message}), {qos:1})
     }else{
-      console.log(JSON.stringify(clinic))
-      client.publish(publishOneClinicSucceeded, JSON.stringify(JSON.stringify(clinic)), {qos:1})
+      if(clinic !== null){
+        client.publish(publishOneClinicSucceeded, JSON.stringify(JSON.stringify(clinic)), {qos:1})
+      }else{
+        client.publish(publishOneClinicFailed, JSON.stringify({'error' : 'Clinic not found in the database.'}), {qos:1})
+      }
     }
   })
 }
