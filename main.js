@@ -1,7 +1,6 @@
 const request = require("request");
 const mongoose = require("mongoose");
 const mqtt = require("mqtt");
-const UserData = require("./models/user");
 const DentistsData = require("./models/dentist");
 const dentist = require("./models/dentist");
 //const MapsData = require("./models/map");
