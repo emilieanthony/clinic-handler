@@ -3,9 +3,6 @@ const mongoose = require("mongoose");
 const mqtt = require("mqtt");
 const DentistsData = require("./models/dentist");
 const dentist = require("./models/dentist");
-//const MapsData = require("./models/map");
-//const RequestData = require("./models/request");
-//const ResponsesData = require("./models/response");
 
 // Variables
 const mongoURI = "mongodb://localhost:27017/dentistimoDB";
