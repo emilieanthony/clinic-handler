@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const request = require("request");
 const mongoose = require("mongoose");
 const mqtt = require("mqtt");
@@ -5,7 +7,7 @@ const DentistsData = require("./models/dentist");
 const dentist = require("./models/dentist");
 
 // Variables
-const mongoURI = "mongodb://localhost:27017/dentistimoDB";
+const mongoURI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@dentistimo0.vd9sq.mongodb.net/Dentistimo`;
 const port = process.env.PORT || 3000;
 const connectUrl = `mqtt://localhost:1883`;
 
@@ -25,11 +27,11 @@ mongoose.connect(
   { useNewUrlParser: true, useUnifiedTopology: true },
   function (err) {
     if (err) {
-      console.error(`Failed to connect to MongoDB with URI: ${mongoURI}`);
+      console.error('Failed to connect to MongoDB');
       console.error(err.stack);
       process.exit(1);
     }
-    console.log(`Connected to MongoDB with URI: ${mongoURI}`);
+    console.log('Connected to MongoDB');
   }
 );
 
