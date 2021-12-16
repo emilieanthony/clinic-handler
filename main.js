@@ -56,7 +56,7 @@ client.on("connect", () => {
 /**  Listens to message reception and reacts based on the topic */
 client.on("message", async (topic, payload) => {
   console.log("Received Message:", topic, payload.toString());
-    switch (topic) {
+  switch (topic) {
     case newClinicTopic:
       addNewClinic(payload);
       break;
