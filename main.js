@@ -20,6 +20,7 @@ const getAClinic = "get_a_clinic";
 // Published topics
 const publishOneClinicFailed = "send_a_clinic/failed";
 const publishOneClinicSucceeded = "send_a_clinic/succeeded";
+const publishError = "clinicService/Error";
 
 // Connect to MongoDB
 mongoose.connect(
@@ -72,7 +73,13 @@ client.on("message", async (topic, payload) => {
 });
 
 const addNewClinic = (payload) => {
-  const data = JSON.parse(payload);
+  try {
+    const data = JSON.parse(payload);
+  } catch (error) {
+    client.publish(publishError, 'Parsing error: ' + error.toString());
+    console.log(error)
+  }
+  
   const dentist = new DentistsData(data);
   dentist.save(function (err, newDentist) {
     if (err) return console.error(err);
@@ -93,8 +100,13 @@ const publishAllClinics = async () => {
  * @param payload (message as a string). Needs to contain the database _id and be parsable into a JSON object.
  */
 function getClinic(payload) {
-  let requestedClinic = JSON.parse(payload);
-  getClinicFromDatabase(requestedClinic);
+  try {
+    let requestedClinic = JSON.parse(payload);
+    getClinicFromDatabase(requestedClinic);
+  } catch (error) {
+    client.publish(publishError, 'Parsing error: ' + error.toString());
+    console.log(error)
+  } 
 }
 
 /**
