@@ -4,7 +4,6 @@ const request = require("request");
 const mongoose = require("mongoose");
 const mqtt = require("mqtt");
 const DentistsData = require("./models/dentist");
-const dentist = require("./models/dentist");
 
 // Variables
 const mongoURI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@dentistimo0.vd9sq.mongodb.net/Dentistimo`;
@@ -74,23 +73,29 @@ client.on("message", async (topic, payload) => {
 
 const addNewClinic = (payload) => {
   try {
-    const data = JSON.parse(payload);
+    let data = JSON.parse(payload);
+  const dentist = new DentistsData(data);
+  DentistsData.findOne(dentist.id, function(err, result){
+    if(result === null){
+      dentist.save(function (err, newDentist) {
+        if (err) return console.error(err);
+        console.log(dentist.name + " saved to database.");
+        client.publish(storedClinicTopic, JSON.stringify(newDentist));
+      });
+    }else{
+      console.log(dentist.name + " already in database.");
+      client.publish(storedClinicTopic, JSON.stringify(isInDatabase));
+    }
+  })
   } catch (error) {
     client.publish(publishError, 'Parsing error: ' + error.toString());
     console.log(error)
   }
-  
-  const dentist = new DentistsData(data);
-  dentist.save(function (err, newDentist) {
-    if (err) return console.error(err);
-    console.log(dentist.name + " saved to database.");
-    client.publish(storedClinicTopic, JSON.stringify(newDentist));
-  });
 };
 
 const publishAllClinics = async () => {
-  const dentists = await dentist.find();
-  dentists.forEach((dentist) => {
+  const dentist = await DentistsData.find();
+  dentist.forEach((dentist) => {
     client.publish(storedClinicTopic, JSON.stringify(dentist));
     console.log("Published dentists:" + dentist.name);
   });
@@ -115,7 +120,7 @@ function getClinic(payload) {
  */
 function getClinicFromDatabase(requestedClinic) {
   let clinicID = requestedClinic._id;
-  dentist.findById(clinicID, function (err, clinic) {
+  DentistsData.findById(clinicID, function (err, clinic) {
     if (err) {
       client.publish(
         publishOneClinicFailed,
@@ -142,6 +147,7 @@ function getClinicFromDatabase(requestedClinic) {
 
 // Get dentist data from URL and publish
 function updateDB() {
+  console.log('Updating Database')
   request(
     "https://raw.githubusercontent.com/feldob/dit355_2020/master/dentists.json",
     { json: true },
@@ -149,19 +155,28 @@ function updateDB() {
       if (err) {
         return console.log(err);
       }
-      await DentistsData.deleteMany({});
-      //store in database
-      DentistsData.create(body.dentists, function (err, dentists) {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        dentists.forEach((dentist) => {
-          client.publish(storedClinicTopic, JSON.stringify(dentist));
-          console.log("Published dentists:" + dentist.name);
-        });
-      });
-    }
+      for (let i = 0; i < body.dentists.length; i++){
+        let currentDentist = body.dentists[i]
+        DentistsData.findOne({id:currentDentist.id}, function(err, result){
+          if (err){
+            console.log(err.message)
+          }else{
+            if (result === null) {
+                let newDentist = new DentistsData(currentDentist)
+                newDentist.save( function (err, currentDentist) {
+                  if (err) {
+                    return console.error(err);
+                  } else {
+                    console.log(currentDentist.name + " saved to database.");
+                  }
+                })
+            }else{
+              console.log(currentDentist.name + " already in database.");
+            }
+          }
+        })
+      }
+      }
   );
 }
 
