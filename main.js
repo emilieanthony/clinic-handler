@@ -17,6 +17,12 @@ const storedClinicTopic = "stored_new_clinic";
 const getAllClinics = "get_all_clinics";
 const getAClinic = "get_a_clinic";
 
+const listOfSubscribedTopics = [
+  newClinicTopic,
+  getAllClinics,
+  getAClinic
+]
+
 // Published topics
 const publishOneClinicFailed = "send_a_clinic/failed";
 const publishOneClinicSucceeded = "send_a_clinic/succeeded";
@@ -38,13 +44,16 @@ mongoose.connect(
 
 // Connect MQTT
 const client = mqtt.connect(connectUrl, {
-  // clientId,
+  clientId: 'Clinic Handler n°'+ Math.random().toString(16).substr(2, 8),
   clean: true,
-  connectTimeout: 4000,
-  username: "emqx",
-  password: "public",
-  reconnectPeriod: 1000,
+  will: {
+    topic: "Team5/Dentistimo/ClinicHandler/LastWill",
+    payload: "Clinic handler has been disconnected from the system",
+    qos: 1
+  }
 });
+
+module.exports.mqttClient = client;
 
 // Subscribe to new topics
 client.on("connect", () => {
@@ -163,6 +172,17 @@ function updateDB() {
       });
     }
   );
+}
+
+/**
+ * Unsubscribe and disconnect from the broker.
+ */
+module.exports.disconnect = function(){
+    listOfSubscribedTopics.forEach(topic => {
+      client.unsubscribe(topic, console.log('Unsubscribing to topic ' + topic))
+    })
+  client.end()
+  console.log('Disconnecting from MQTT broker.')
 }
 
 // Updates database

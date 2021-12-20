@@ -2,14 +2,15 @@
   "name": "dentistimo",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "Index.js",
   "scripts": {
-    "start": "nodemon main.js"
+    "start": "node Index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^10.0.0",
+    "inquirer": "^8.2.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.12",
     "mqtt": "^4.2.8",
