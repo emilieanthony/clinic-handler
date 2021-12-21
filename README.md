@@ -7,7 +7,7 @@ The clinic handler provides other components with dentistry data and updates the
 
 ## System Architecture - Component Diagram
 
-![_Current_state__System_Component_Diagram-21_dec.drawio](/uploads/af5820956b14d20b288d27770f3b1edd/_Current_state__System_Component_Diagram-21_dec.drawio.png)
+![_Current_state__System_Component_Diagram-21_dec.drawio__2_](/uploads/1cb2af1da6b164bf87378040b435e73e/_Current_state__System_Component_Diagram-21_dec.drawio__2_.png)
 
 ## Component Responsibilities
 
