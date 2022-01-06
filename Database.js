@@ -8,15 +8,7 @@ const mongoURI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@de
 const connect = () =>
   mongoose.connect(
     mongoURI,
-    { useNewUrlParser: true, useUnifiedTopology: true },
-    function (err) {
-      if (err) {
-        console.error("Failed to connect to MongoDB");
-        console.error(err.stack);
-        process.exit(1);
-      }
-      console.log("Connected to MongoDB");
-    }
+    { useNewUrlParser: true, useUnifiedTopology: true }
   );
 
 const findDentists = async (filter) => {

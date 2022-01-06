@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const request = require("request");
+const fetch = require("node-fetch");
 const mqtt = require("./Mqtt");
 const database = require("./Database");
 
@@ -22,35 +22,35 @@ const listenToSubscriptions = () =>
     }
   });
 
-// Get dentist data from URL and publish
-function updateDB() {
-  console.log("Updating Database");
-  request(
-    "https://raw.githubusercontent.com/feldob/dit355_2020/master/dentists.json",
-    { json: true },
-    async (err, res, body) => {
-      if (err) {
-        return console.log(err);
-      }
-      for (let i = 0; i < body.dentists.length; i++) {
-        let currentDentist = body.dentists[i];
-        try {
-          const result = await database.findOneDentist({
-            id: currentDentist.id,
-          });
-          if (result === null) {
-            await database.save(currentDentist);
-            console.log(currentDentist.name + " saved to database.");
-          } else {
-            console.log(currentDentist.name + " already in database.");
-          }
-        } catch (err) {
-          console.log(err.message);
-        }
+const getDentistDataFromGithub = async () => {
+  console.log("Fetching dentists from Github");
+  const response = await fetch(
+    "https://raw.githubusercontent.com/feldob/dit355_2020/master/dentists.json"
+  );
+  return response.json();
+};
+
+// Save Github dentists to database
+const saveGithubDentists = async () => {
+  try {
+    const response = await getDentistDataFromGithub();
+    console.log("Updating Database");
+    for (let i = 0; i < response.dentists.length; i++) {
+      let currentDentist = response.dentists[i];
+      const result = await database.findOneDentist({
+        id: currentDentist.id,
+      });
+      if (result === null) {
+        await database.save(currentDentist);
+        console.log(currentDentist.name + " saved to database.");
+      } else {
+        console.log(currentDentist.name + " already in database.");
       }
     }
-  );
-}
+  } catch (err) {
+    return console.error(err);
+  }
+};
 
 const publishAllClinics = async () => {
   const dentists = await database.findDentists();
@@ -109,12 +109,21 @@ const getClinicFromDatabase = async (requestedClinic) => {
   }
 };
 
-const startServer = () => {
-  database.connect();
+/**
+ * Makes sure database is connected before updating the database and makes
+ * sure logging in terminal is done in sequential order
+ */
+const startServer = async () => {
+  try {
+    await database.connect();
+    console.log("Connected to MongoDB");
+  } catch (err) {
+    console.error("Failed to connect to MongoDB");
+    console.error(err.stack);
+    process.exit(1);
+  }
   listenToSubscriptions();
-  // Updates database
-  setInterval(() => updateDB(), 1000 * 60 * 60 * 24);
-  updateDB();
+  saveGithubDentists();
 };
 
 module.exports.start = startServer;
