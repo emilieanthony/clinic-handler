@@ -1,27 +1,8 @@
 require("dotenv").config();
 
 const request = require("request");
-const mongoose = require("mongoose");
-const DentistsData = require("./models/dentist");
 const mqtt = require("./Mqtt");
-
-// Variables
-const mongoURI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@dentistimo0.vd9sq.mongodb.net/Dentistimo`;
-
-// Connect to MongoDB
-const connectToDatabase = () =>
-  mongoose.connect(
-    mongoURI,
-    { useNewUrlParser: true, useUnifiedTopology: true },
-    function (err) {
-      if (err) {
-        console.error("Failed to connect to MongoDB");
-        console.error(err.stack);
-        process.exit(1);
-      }
-      console.log("Connected to MongoDB");
-    }
-  );
+const database = require("./Database");
 
 /**  Listens to message reception and reacts based on the topic */
 const listenToSubscriptions = () =>
@@ -29,9 +10,6 @@ const listenToSubscriptions = () =>
     console.log("Received Message:", topic, payload.toString());
     console.log(topic);
     switch (topic) {
-      case mqtt.subscribedTopics.newClinicTopic:
-        addNewClinic(payload);
-        break;
       case mqtt.subscribedTopics.getAllClinics:
         console.log("Publish all clinics");
         publishAllClinics();
@@ -44,40 +22,39 @@ const listenToSubscriptions = () =>
     }
   });
 
-const addNewClinic = (payload) => {
-  try {
-    let data = JSON.parse(payload);
-    const dentist = new DentistsData(data);
-    DentistsData.findOne(dentist.id, function (err, result) {
-      if (result === null) {
-        dentist.save(function (err, newDentist) {
-          if (err) return console.error(err);
-          console.log(dentist.name + " saved to database.");
-          mqtt.client.publish(
-            mqtt.publishedTopics.storedClinicTopic,
-            JSON.stringify(newDentist)
-          );
-        });
-      } else {
-        console.log(dentist.name + " already in database.");
-        mqtt.client.publish(
-          mqtt.publishedTopics.storedClinicTopic,
-          JSON.stringify(isInDatabase)
-        );
+// Get dentist data from URL and publish
+function updateDB() {
+  console.log("Updating Database");
+  request(
+    "https://raw.githubusercontent.com/feldob/dit355_2020/master/dentists.json",
+    { json: true },
+    async (err, res, body) => {
+      if (err) {
+        return console.log(err);
       }
-    });
-  } catch (error) {
-    mqtt.client.publish(
-      mqtt.publishedTopics.publishError,
-      "Parsing error: " + error.toString()
-    );
-    console.log(error);
-  }
-};
+      for (let i = 0; i < body.dentists.length; i++) {
+        let currentDentist = body.dentists[i];
+        try {
+          const result = await database.findOneDentist({
+            id: currentDentist.id,
+          });
+          if (result === null) {
+            await database.save(currentDentist);
+            console.log(currentDentist.name + " saved to database.");
+          } else {
+            console.log(currentDentist.name + " already in database.");
+          }
+        } catch (err) {
+          console.log(err.message);
+        }
+      }
+    }
+  );
+}
 
 const publishAllClinics = async () => {
-  const dentist = await DentistsData.find();
-  dentist.forEach((dentist) => {
+  const dentists = await database.findDentists();
+  dentists.forEach((dentist) => {
     mqtt.client.publish(
       mqtt.publishedTopics.storedClinicTopic,
       JSON.stringify(dentist)
@@ -106,70 +83,34 @@ function getClinic(payload) {
  * Query the database to retrieve a given clinic. Publishes the result of the query to the appropriate topics via mqtt.
  * @param requestedClinic json object clinic: Needs to contain the database _id and be parsable into a JSON object.
  */
-function getClinicFromDatabase(requestedClinic) {
+const getClinicFromDatabase = async (requestedClinic) => {
   let clinicID = requestedClinic._id;
-  DentistsData.findById(clinicID, function (err, clinic) {
-    if (err) {
+  try {
+    const clinic = await database.findDentistById(clinicID);
+    if (clinic !== null) {
       mqtt.client.publish(
-        mqtt.publishedTopics.publishOneClinicFailed,
-        JSON.stringify({ error: err.message }),
+        mqtt.publishedTopics.publishOneClinicSucceeded,
+        JSON.stringify(JSON.stringify(clinic)),
         { qos: 1 }
       );
     } else {
-      if (clinic !== null) {
-        mqtt.client.publish(
-          mqtt.publishedTopics.publishOneClinicSucceeded,
-          JSON.stringify(JSON.stringify(clinic)),
-          { qos: 1 }
-        );
-      } else {
-        mqtt.client.publish(
-          mqtt.publishedTopics.publishOneClinicFailed,
-          JSON.stringify({ error: "Clinic not found in the database." }),
-          { qos: 1 }
-        );
-      }
+      mqtt.client.publish(
+        mqtt.publishedTopics.publishOneClinicFailed,
+        JSON.stringify({ error: "Clinic not found in the database." }),
+        { qos: 1 }
+      );
     }
-  });
-}
-
-// Get dentist data from URL and publish
-function updateDB() {
-  console.log("Updating Database");
-  request(
-    "https://raw.githubusercontent.com/feldob/dit355_2020/master/dentists.json",
-    { json: true },
-    async (err, res, body) => {
-      if (err) {
-        return console.log(err);
-      }
-      for (let i = 0; i < body.dentists.length; i++) {
-        let currentDentist = body.dentists[i];
-        DentistsData.findOne({ id: currentDentist.id }, function (err, result) {
-          if (err) {
-            console.log(err.message);
-          } else {
-            if (result === null) {
-              let newDentist = new DentistsData(currentDentist);
-              newDentist.save(function (err, currentDentist) {
-                if (err) {
-                  return console.error(err);
-                } else {
-                  console.log(currentDentist.name + " saved to database.");
-                }
-              });
-            } else {
-              console.log(currentDentist.name + " already in database.");
-            }
-          }
-        });
-      }
-    }
-  );
-}
+  } catch (err) {
+    mqtt.client.publish(
+      mqtt.publishedTopics.publishOneClinicFailed,
+      JSON.stringify({ error: err.message }),
+      { qos: 1 }
+    );
+  }
+};
 
 const startServer = () => {
-  connectToDatabase();
+  database.connect();
   listenToSubscriptions();
   // Updates database
   setInterval(() => updateDB(), 1000 * 60 * 60 * 24);

@@ -5,7 +5,6 @@ const connectUrl = `mqtt://localhost:1883`;
  * Object of subscribed topics. Used for exporting all topics at once
  */
 const subscribedTopics = {
-  newClinicTopic: "new_clinic",
   getAllClinics: "get_all_clinics",
   getAClinic: "get_a_clinic",
 };
