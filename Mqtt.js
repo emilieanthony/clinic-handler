@@ -10,7 +10,7 @@ const subscribedTopics = {
 };
 
 /**
- * Array of subscribes topics
+ * Array of subscribed topics
  */
 const subscribedTopicsValues = Object.values(subscribedTopics);
 

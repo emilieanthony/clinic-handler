@@ -5,14 +5,14 @@ const DentistModel = require("./models/dentist");
 const mongoURI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@dentistimo0.vd9sq.mongodb.net/Dentistimo`;
 
 /**
- * Connect to MonfoDB
+ * Connect to MongoDB
  * Error handling is done when starting the ClinicHandler
  */
 const connect = () =>
-  mongoose.connect(
-    mongoURI,
-    { useNewUrlParser: true, useUnifiedTopology: true }
-  );
+  mongoose.connect(mongoURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
 
 const findDentists = async (filter) => {
   return DentistModel.find(filter).exec();
@@ -30,7 +30,6 @@ const saveDentist = async (dentist) => {
   const data = new DentistModel(dentist);
   return data.save();
 };
-
 
 /**
  * What we expose from this file
