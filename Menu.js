@@ -1,11 +1,13 @@
 const inquirer = require("inquirer");
 
-const clinicHandler = require("./ClinicHandler.js");
+const mqtt = require("./Mqtt.js");
+const clinicHandler = require("./ClinicHandler");
 
 /**
  * Waits for user input to close the clinic handler. Closing the clinic handler disconnects the component in a clean way from the system
  */
 module.exports.printMenu = function () {
+  clinicHandler.start();
   inquirer
     .prompt([
       {
@@ -16,7 +18,7 @@ module.exports.printMenu = function () {
       },
     ])
     .then((answer) => {
-      clinicHandler.disconnect();
+      mqtt.disconnect();
       console.log("See you around!");
       process.exit();
     });
