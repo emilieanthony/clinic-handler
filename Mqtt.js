@@ -9,6 +9,9 @@ const subscribedTopics = {
   getAClinic: "get_a_clinic",
 };
 
+/**
+ * Array of subscribes topics
+ */
 const subscribedTopicsValues = Object.values(subscribedTopics);
 
 /**
@@ -35,7 +38,7 @@ const client = mqtt.connect(connectUrl, {
 });
 
 /**
- * Subscribe to new topics
+ * Subscribe to topics
  */
 client.on("connect", () => {
   console.log("Connected to MQTT");

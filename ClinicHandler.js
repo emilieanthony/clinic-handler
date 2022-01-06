@@ -57,11 +57,13 @@ const publishAllClinics = async () => {
   dentists.forEach((dentist) => {
     mqtt.client.publish(
       mqtt.publishedTopics.storedClinicTopic,
-      JSON.stringify(dentist)
+      JSON.stringify(dentist),
+      { qos: 2 }
     );
     console.log("Published dentists:" + dentist.name);
   });
 };
+
 /**
  * Method that parses the message into a json object and forwards it to query the database.
  * @param payload (message as a string). Needs to contain the database _id and be parsable into a JSON object.
@@ -110,9 +112,9 @@ const getClinicFromDatabase = async (requestedClinic) => {
 };
 
 /**
- * This function is called in Menu to start the server
- * Makes sure database is connected before updating the database and makes
- * sure logging in terminal is done in sequential order
+ * This function is called in Menu to start the Clinic Handler
+ * The funtion makes sure database is connected before updating the database and
+ * that the logging in terminal is done in sequential order
  */
 const startServer = async () => {
   try {
@@ -127,4 +129,7 @@ const startServer = async () => {
   saveGithubDentists();
 };
 
+/**
+ * What we expose from this file
+ */
 module.exports.start = startServer;

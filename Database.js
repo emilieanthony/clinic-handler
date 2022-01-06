@@ -4,7 +4,10 @@ const DentistModel = require("./models/dentist");
 // Variables
 const mongoURI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@dentistimo0.vd9sq.mongodb.net/Dentistimo`;
 
-// Connect to MongoDB
+/**
+ * Connect to MonfoDB
+ * Error handling is done when starting the ClinicHandler
+ */
 const connect = () =>
   mongoose.connect(
     mongoURI,
@@ -28,6 +31,10 @@ const saveDentist = async (dentist) => {
   return data.save();
 };
 
+
+/**
+ * What we expose from this file
+ */
 module.exports.connect = connect;
 module.exports.findDentists = findDentists;
 module.exports.findOneDentist = findOneDentist;
