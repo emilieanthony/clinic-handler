@@ -110,6 +110,7 @@ const getClinicFromDatabase = async (requestedClinic) => {
 };
 
 /**
+ * This function is called in Menu to start the server
  * Makes sure database is connected before updating the database and makes
  * sure logging in terminal is done in sequential order
  */
