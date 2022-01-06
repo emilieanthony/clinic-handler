@@ -3,6 +3,7 @@ require("dotenv").config();
 const fetch = require("node-fetch");
 const mqtt = require("./Mqtt");
 const database = require("./Database");
+const circuitBreaker = require("./CircuitBreaker");
 
 /**  Listens to message reception and reacts based on the topic */
 const listenToSubscriptions = () =>
@@ -24,10 +25,14 @@ const listenToSubscriptions = () =>
 
 const getDentistDataFromGithub = async () => {
   console.log("Fetching dentists from Github");
-  const response = await fetch(
-    "https://raw.githubusercontent.com/feldob/dit355_2020/master/dentists.json"
-  );
-  return response.json();
+  return circuitBreaker
+    .fire(
+      fetch,
+      "https://raw.githubusercontent.com/feldob/dit355_2020/master/dentists.json"
+    )
+    .then((response) => {
+      return response.json();
+    });
 };
 
 // Save Github dentists to database
@@ -48,7 +53,7 @@ const saveGithubDentists = async () => {
       }
     }
   } catch (err) {
-    return console.error(err);
+    console.error(err);
   }
 };
 

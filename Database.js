@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const DentistModel = require("./models/dentist");
+const circuitBreaker = require("./CircuitBreaker");
 
 // Variables
 const mongoURI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@dentistimo0.vd9sq.mongodb.net/Dentistimo`;
@@ -9,7 +10,7 @@ const mongoURI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@de
  * Error handling is done when starting the ClinicHandler
  */
 const connect = () =>
-  mongoose.connect(mongoURI, {
+  circuitBreaker.fire(mongoose.connect, mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
