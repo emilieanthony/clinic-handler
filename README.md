@@ -67,9 +67,10 @@ To download the latest version of node.js, please follow this [link](https://nod
 
 | Step | Command |
 | ------ | ------ |
-| start your MQTT broker on port 1883| This differs based on which broker, as well as your settings. Make sure the broker listens to port 1883. (Default port with mosquitto) |
-| clone this project on your machine | `git clone < SSH address or HTTPS address >` |
-| go to the repo and run the following  | `npm start` |
+| Start your MQTT broker on port 1883| This differs based on which broker, as well as your settings. Make sure the broker listens to port 1883. (Default port with mosquitto) |
+| Clone this project on your machine | `git clone < SSH address or HTTPS address >` |
+| Go to the repo and add .env file | Please contact one of the developers of this project to recieve the contents of the file. It should be placed directly in the repo. <img src="./Assets/picEnvClinic.png" width="120" height="120">
+| Start the system from the repo by running the following  | `npm start` |
 
 In the window of your broker, you should see a message similar to this:
 
