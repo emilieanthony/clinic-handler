@@ -5,10 +5,6 @@
 This component is part of the the distributed system DENTISTIMO, a web application that offers a geolocalisation based dental care booking system.
 The clinic handler provides other components with dentistry data and updates the database. More details can be found in the component diagram below as well as further in this README.md file. 
 
-## System Architecture - Component Diagram
-
-![_Current_state__System_Component_Diagram-21_dec.drawio__2_](/uploads/1cb2af1da6b164bf87378040b435e73e/_Current_state__System_Component_Diagram-21_dec.drawio__2_.png)
-
 ## Component Responsibilities
 
 - Read dentist data from URL
@@ -22,7 +18,7 @@ The clinic handler provides other components with dentistry data and updates the
 The component gets the dentist data from a JSON file.
 
 The JSON objects should have at least these information for the following tasks:
-- Store a new clinic: a JSON object following the clinic schema: 
+- Store clinics: a JSON object following the clinic schema: 
 
 <b>Example</b>
 
@@ -74,6 +70,6 @@ To download the latest version of node.js, please follow this [link](https://nod
 
 In the window of your broker, you should see a message similar to this:
 
-`1638885841: New client connected from 127.0.0.1:49531 as Dentistimo Team5 - Booking Handler n°3c1ff99e (p2, c1, k60).`
+`1638885841: New client connected from 127.0.0.1:49531 as Dentistimo Team5 - Clinic Handler n°3c1ff99e (p2, c1, k60).`
 
-The booking handler is now ready to proceed your requests. 
+The Clinic Handler is now ready to proceed your requests. 
