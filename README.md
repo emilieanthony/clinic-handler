@@ -5,6 +5,9 @@
 This component is part of the the distributed system DENTISTIMO, a web application that offers a geolocalisation based dental care booking system.
 The clinic handler provides other components with dentistry data and updates the database. More details can be found in the component diagram in the [documentation repository](https://git.chalmers.se/courses/dit355/test-teams-formation/team-5/team-4-project). 
 
+## System Architecture
+![Arch](https://user-images.githubusercontent.com/59511737/148955252-eb7e8450-aac3-4e49-a4bb-eb1068b11832.png)
+
 ## Component Responsibilities
 
 - Read dentist data from URL
@@ -66,6 +69,7 @@ To download the latest version of node.js, please follow this [link](https://nod
 | Start your MQTT broker on port 1883| This differs based on which broker, as well as your settings. Make sure the broker listens to port 1883. (Default port with mosquitto) |
 | Clone this project on your machine | `git clone < SSH address or HTTPS address >` |
 | Go to the repo and add .env file | Please contact one of the developers of this project to recieve the contents of the file. It should be placed directly in the repo. <img src="./Assets/picEnvClinic.png" width="120" height="120">
+| Install necessary dependencies  | `npm install` |
 | Start the system from the repo by running the following  | `npm start` |
 
 In the window of your broker, you should see a message similar to this:
