@@ -3,7 +3,7 @@
 ## Description
 
 This component is part of the the distributed system DENTISTIMO, a web application that offers a geolocalisation based dental care booking system.
-The clinic handler provides other components with dentistry data and updates the database. More details can be found in the component diagram in the [documentation repository](https://git.chalmers.se/courses/dit355/test-teams-formation/team-5/team-4-project). 
+The clinic handler provides other components with dentistry data and updates the database. More details can be found in the component diagram in the [documentation repository](https://github.com/emilieanthony/dentistimo-documentation). 
 
 ## System Architecture
 ![Arch](https://user-images.githubusercontent.com/59511737/148955252-eb7e8450-aac3-4e49-a4bb-eb1068b11832.png)
